@@ -1,60 +1,105 @@
 from database import *
 
 baseGenreList = ['Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime', 
-	'Documentary', 'Drama', 'Family', 'Fantasy', 'Game Show', 'History', 'Horror', 'Music', 
-	'Musical', 'Mystery', 'News', 'Reality-TV', 'Romance', 'Sci-Fi', 'Sport', 'Superhero', 
-	'Talk Show', 'Thriller', 'War', 'Western']
+'Documentary', 'Drama', 'Family', 'Fantasy', 'Game Show', 'History', 'Horror', 'Music', 
+'Musical', 'Mystery', 'News', 'Reality-TV', 'Romance', 'Sci-Fi', 'Sport', 'Superhero', 
+'Talk Show', 'Thriller', 'War', 'Western']
 
 
-def printQuery(query):
-	for row in query:
-		print(row)
+# def printQuery(movieInfo, genres):
+# 	print(movieInfo.movie, movieInfo.summary, movieInfo.rating, genres)
+# 	print("\n")
 
-def test():
-	query = (ActorMovie.select(ActorMovie.nm, ActorMovie.actorName, ActorMovie.movieID).limit(5))
+def appendGenreAndPrint(moviesQ, recMoviesQ):
+	for row in moviesQ:
+		genres = []
+		genres_q = (MovieGenre.select().where(MovieGenre.movieID == row.movieID))
 
-	printQuery(query)
+		for genre in genres_q:
+			genres.append(genre.genre)
+
+		print(row.movie, row.summary, row.rating, genres)
+		print("\n")
 
 
-def searchGenre(genres):
-	query = (ActorMovie.select(ActorMovie.nm, ActActorMovieor.actorName, Movie.movieID, Movie.movie, MovieGenre.genre, Movie.rating, Movie.summary)
-		.join(Movie, on=(ActorMovie.movieID == Movie.movieID))
-		.join(MovieGenre, on=(Movie.movieID == MovieGenre.movieID))
-		.where(Movie.genre in genres)
-		.order_by(Movie.rating)
-		.limit(10))
+def searchByGenres(genres):
+	genreList = genres.split(', ')
+	movies_q = (MovieGenre.select().where(MovieGenre.genre.in_(genreList)))
 
-	printQuery(query)
+	movieIDList = []
 
-def searchActor(actorNames):
-	query = (ActorMovie.select(ActorMovie.nm, ActorMovie.actorName, Movie.movieID, Movie.movie, MovieGenre.genre, Movie.rating, Movie.summary)
-		.join(Movie, on=(ActorMovie.movieID == Movie.movieID))
-		.join(MovieGenre, on=(Movie.movieID == MovieGenre.movieID))
-		.where(ActorMovie.actorName in actorNames)
-		.order_by(Movie.rating)
-		.limit(10))
+	for row in movies_q:
+		movieIDList.append(row.movieID)
 
-	printQuery(query)
 
-def search(actorNames='', genres=baseGenreList):
+	movieInfo_q = (Movie.select().where(Movie.movieID.in_(movieIDList)).order_by(Movie.rating.desc()).limit(10))
+
+	return appendGenreAndPrint(movieInfo_q)
+
+def searchByActors(actorNames):
+	actorNamesList = actorNames.split(', ')
+	actor_q = (ActorMovie.select().where(ActorMovie.actorName.in_(actorNamesList)))
+
+	actorMovieList = []
+
+	for row in actor_q:
+		actorMovieList.append(row.movieID)
+
+
+	movies_q = (Movie.select().where(Movie.movieID.in_(actorMovieList)).order_by(Movie.rating.desc()).limit(10))
+
+	recommend_movies_q = recommendByActors(actorNamesList, actorMovieList)
+
+	return appendGenreAndPrint(movies_q)
+
+def search(actorNames, genres):
 	actorNameList = actorNames.split(', ')
-	if isinstance(genres, str):
-		genres = genres.split(', ')
+	genreList = genres.split(', ')
 
-	if len(actorNameList) == 1 and actorNameList[0] == '' and len(genres) < 26:
-		searchGenre(genresList)
-	elif len(genres) == 26:
-		searchActor(actorNameList)
-	else:
-		query = (ActorMovie.select(ActorMovie.nm, ActorMovie.actorName, Movie.movieID, Movie.movie, MovieGenre.genre, Movie.rating, Movie.summary)
-		.join(Movie, on=(ActorMovie.movieID == Movie.movieID))
-		.join(MovieGenre, on=(Movie.movieID == MovieGenre.movieID))
-		.where(ActorMovie.actorName in actorNameList and MovieGenre in genres)
-		.order_by(Movie.rating)
-		.limit(10))
+	movies_q = (MovieGenre.select().where(MovieGenre.genre.in_(genreList)))
 
-	printQuery(query)
+	genreMovieList = []
 
+	for row in movies_q:
+		genreMovieList.append(row.movieID)
+
+
+	actor_q = (ActorMovie.select().where(ActorMovie.actorName.in_(actorNameList)))
+
+	actorMovieList = []
+
+	for row in actor_q:
+		actorMovieList.append(row.movieID)
+
+	movieInfo_q = (Movie.select().where(Movie.movieID.in_(actorMovieList) and Movie.movieID.in_(genreMovieList)).order_by(Movie.rating.desc()).limit(10))
+
+	return appendGenreAndPrint(movieInfo_q)
+
+
+def recAppendGenreAndPrint(moviesQ):
+	print("we also recommend these movies that you may be interested in:\n")
+	for row in moviesQ:
+		genres = []
+		genres_q = (MovieGenre.select().where(MovieGenre.movieID == row.movieID))
+
+		for genre in genres_q:
+			genres.append(genre.genre)
+
+		print(row.movie, row.summary, row.rating, genres)
+		print("\n")
+
+def recByActors(actorNamesList, movieList):
+	otherActors = (ActorMovie.select(ActorMovie.nm, fn.COUNT(ActorMovie.nm))
+								.join(Movie, on=(ActorMovie.movieID == Movie.movieID))
+								.where(Movie.movieID.in_(movieList) and ActorMovie.actorName.not_in(actorNamesList))
+								.limit(3))
+
+	recMovies = (Movie.select().join(ActorMovie, on=(ActorMovie.movieID == Movie.movieID))
+								.where(ActorMovie.nm.in_(otherActors.nm) and Movie.movieID.not_in(movieList))
+								.order_by(Movie.rating.desc())
+								.limit(5))
+
+	return recMovies
 
 
 
@@ -87,10 +132,4 @@ def search(actorNames='', genres=baseGenreList):
 # 		and Movie.movieID.not_in(movieID_query.movieID))
 # 	.order_by(Movie.rating)
 # 	.limit(5))
-
-# import database.ActorMovie
-# import psycopg2
-# from peewee import *
-
-# print(ActorMovie.select(ActorMovie.nm).distinct.count)
 
