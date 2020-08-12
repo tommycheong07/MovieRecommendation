@@ -77,9 +77,18 @@ def search(actorNames, genres):
 	for row in actor_q:
 		actorMovieList.append(row.movieID)
 
-	movieInfo_q = (Movie.select().where((Movie.movieID.in_(actorMovieList)) & (Movie.movieID.in_(genreMovieList))).order_by(Movie.rating.desc()).limit(10))
+	mov_q = (Movie.select().where((Movie.movieID.in_(actorMovieList)) & (Movie.movieID.in_(genreMovieList))))
 
-	return appendGenreAndPrint(movieInfo_q)
+	movList = []
+
+	for row in mov_q:
+		movList.append(row.movieID)
+
+	movieInfo_q = (Movie.select().where(Movie.movieID.in_(movList)).order_by(Movie.rating.desc()).limit(10))
+
+	rec_movies_q = recByActors(actorNames, movList)
+
+	return appendGenreAndPrint(movieInfo_q, rec_movies_q)
 
 def recByActors(actorNamesList, movieList):
 	otherActors = (ActorMovie.select(ActorMovie.nm, fn.COUNT(ActorMovie.nm).alias('count'))
