@@ -131,7 +131,7 @@ if __name__ == '__main__':
                         if (div.h4.text == 'Genres:'):
                             for a in div.findAll('a', href=True):
                                 # print(a.text.strip())
-                                MovieGenre.insert(movieID=mID, genre=a.text).execute()
+                                MovieGenre.insert(movieID=mID, genre=a.text.strip()).execute()
 
 
                 rating = movieSoup.find('span', itemprop='ratingValue')

@@ -15,13 +15,17 @@ while True:
 		break
 	genreList.append(genre)
 
-print("searching ...")
+
+print("searching ... please wait")
 
 if not actorList and not genreList:
 	print("You did not provide an actor or genre to search")
 elif not genreList:
+	print("here")
 	searchByActors(actorList)
 elif not actorList:
+	print("there")
 	searchByGenres(genreList)
 else:
+	print("all")
 	search(actorList, genreList)
