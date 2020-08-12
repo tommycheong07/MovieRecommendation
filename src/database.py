@@ -39,7 +39,7 @@ class ActorMovie(BaseModel):
     movieID = CharField()
 
 class Movie(BaseModel):
-    movieID = CharField()
+    movieID = CharField(unique=True)
     movie = CharField()
     summary = TextField()
     rating = CharField()
@@ -52,19 +52,20 @@ class MovieGenre(BaseModel):
 # Movie.drop_table()
 # MovieGenre.drop_table()
 
-# with db:
-#    db.create_tables([ActorMovie])
-#    db.create_tables([Movie])
-#    db.create_tables([MovieGenre])
+with db:
+   db.create_tables([ActorMovie])
+   db.create_tables([Movie])
+   db.create_tables([MovieGenre])
 
 
 from requests import get
 from bs4 import BeautifulSoup
 
 if __name__ == '__main__':
-    query = Actor.select().order_by(Actor.nm).offset(678)
+    query = Actor.select()
+    # .order_by(Actor.nm).offset(25)
 
-# query = ['nm0000028']
+    # query = ['nm0000158']
 
 
 # loop through every id in the tuple
@@ -87,10 +88,13 @@ if __name__ == '__main__':
             # idTag = actor-id or actress-id
             if idTag is None or 'soundtrack' in idTag or 'episodes' in idTag:
                 continue
-            if idTag[:5] == 'actor':
-                mID = idTag[7:]
+            if 'actor' in idTag:
+                mID = idTag[6:]
             else:
                 mID = idTag[8:]
+
+            if '-' in mID:
+                mID = mID[1:]
 
             # inserting into actorMovie table
             ActorMovie.insert(nm=id, actorName = anm, movieID=mID).execute()
@@ -100,44 +104,44 @@ if __name__ == '__main__':
             # print(mID)
 
             # going into movie url to find movie name and genre
-            movieURL = movie.find('a', href=True)
-            title = movieURL.text
-            # print(title)
-            URL = get('https://www.imdb.com' + movieURL['href'])
-            movieSoup = BeautifulSoup(URL.text, 'html.parser')
-
-            plot = movieSoup.find('div', class_='summary_text')
-            if plot is not None and plot.a is not None and plot.a.text == 'See full summary':
-                extraSummary = get('https://www.imdb.com' + plot.a['href'])
-                summSoup = BeautifulSoup(extraSummary.text, 'html.parser')
-
-                summplot = summSoup.find('li', class_='ipl-zebra-list__item')
-                summ = summplot.p.text.strip()
-                
-            elif plot is not None:
-                summ = plot.text.strip()
-            else:
-                summ = ''
-
-            # print(summ)
-            
-            divs = movieSoup.findAll('div', class_='see-more inline canwrap')
-            for div in divs:
-                if (div.h4.text == 'Genres:'):
-                    for a in div.findAll('a', href=True):
-                        # print(a.text.strip())
-                        if MovieGenre.select().where(MovieGenre.movieID==mID).count() == 0:
-                            MovieGenre.insert(movieID=mID, genre=a.text).execute()
-
-            rating = movieSoup.find('span', itemprop='ratingValue')
-            if rating is not None:
-                rate = rating.text
-            else:
-                rate = 0
-            # print(rate)
-
-            # inserting into movie table
             if Movie.select().where(Movie.movieID==mID).count() == 0:
+                movieURL = movie.find('a', href=True)
+                title = movieURL.text
+                # print(title)
+                URL = get('https://www.imdb.com/title/' + mID + '/')
+                movieSoup = BeautifulSoup(URL.text, 'html.parser')
+
+                plot = movieSoup.find('div', class_='summary_text')
+                if plot is not None and plot.a is not None and plot.a.text == 'See full summary':
+                    extraSummary = get('https://www.imdb.com' + plot.a['href'])
+                    summSoup = BeautifulSoup(extraSummary.text, 'html.parser')
+
+                    summplot = summSoup.find('li', class_='ipl-zebra-list__item')
+                    summ = summplot.p.text.strip()
+                    
+                elif plot is not None:
+                    summ = plot.text.strip()
+                else:
+                    summ = ''
+
+                # print(summ)
+                if MovieGenre.select().where(MovieGenre.movieID==mID).count() == 0:
+                    divs = movieSoup.findAll('div', class_='see-more inline canwrap')
+                    for div in divs:
+                        if (div.h4.text == 'Genres:'):
+                            for a in div.findAll('a', href=True):
+                                # print(a.text.strip())
+                                MovieGenre.insert(movieID=mID, genre=a.text).execute()
+
+
+                rating = movieSoup.find('span', itemprop='ratingValue')
+                if rating is not None:
+                    rate = rating.text
+                else:
+                    rate = 0
+                # print(rate)
+
+                # inserting into movie table
                 Movie.insert(movieID=mID, movie=title, summary = summ, rating = rate).execute()
 
         print(id)
