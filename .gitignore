@@ -4,3 +4,8 @@ include
 lib
 *.pyc
 src/*.pyc
+pip-selfcheck.json
+pyvenv.cfg
+requirements.txt
+.idea
+actors.csv
