@@ -4,7 +4,7 @@ from recommend import *
 actorList = []
 genreList = []
 while True:
-	actor = input("Who would you like to search for? Enter after each actor/actress to add to search list.Press 1 to stop inputting.")
+	actor = input("Who would you like to search for? Enter after each actor/actress to add to search list. Press 1 to stop inputting.")
 	if actor == '1':
 		break
 	actorList.append(actor)

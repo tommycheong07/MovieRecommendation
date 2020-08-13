@@ -1,14 +1,21 @@
 from database import *
 
-baseGenreList = ['Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime', 
-'Documentary', 'Drama', 'Family', 'Fantasy', 'Game Show', 'History', 'Horror', 'Music', 
-'Musical', 'Mystery', 'News', 'Reality-TV', 'Romance', 'Sci-Fi', 'Sport', 'Superhero', 
-'Talk Show', 'Thriller', 'War', 'Western']
+# baseGenreList = ['Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime', 
+# 'Documentary', 'Drama', 'Family', 'Fantasy', 'Game Show', 'History', 'Horror', 'Music', 
+# 'Musical', 'Mystery', 'News', 'Reality-TV', 'Romance', 'Sci-Fi', 'Sport', 'Superhero', 
+# 'Talk Show', 'Thriller', 'War', 'Western']
 
 
 
 def appendGenreAndPrint(moviesQ, recMoviesQ):
+	print("##### ")
 	print("*** Based on your criterias, we suggest these movies: ***")
+
+	movieDictionary = {}
+	movieDictionary["Selection"] = []
+	movieDictionary["Recommendation"] = []
+	
+
 	for row in moviesQ:
 		genres = []
 		genres_q = (MovieGenre.select().where(MovieGenre.movieID == row.movieID))
@@ -16,11 +23,14 @@ def appendGenreAndPrint(moviesQ, recMoviesQ):
 		for genre in genres_q:
 			genres.append(genre.genre)
 
-		print("Title: " + row.movie, "\nSummary: " + row.summary, "\nRating: " + row.rating, "\nGenres: ", genres)
-		print("\n")
+		movieDictionary["Selection"].append({'movie': row.movie, 'summary': row.summary, 'rating': row.rating, 'genres': genres})
 
-	print("*** We also recommend these movies that you may be interested in based on other actors/actresses " + 
-		"who have played in movies based on your selected actor/actress or similar genres.: ***\n")
+		# print("Title: " + row.movie, "\nSummary: " + row.summary, "\nRating: " + row.rating, "\nGenres: ", genres)
+		# print("\n")
+
+	# print("*** We also recommend these movies that you may be interested in based on other actors/actresses " + 
+	# 	"who have played in movies ` selected actor/actress or similar genres.: ***\n")
+
 	for row in recMoviesQ:
 		genres = []
 		genres_q = (MovieGenre.select().where(MovieGenre.movieID == row.movieID))
@@ -28,8 +38,12 @@ def appendGenreAndPrint(moviesQ, recMoviesQ):
 		for genre in genres_q:
 			genres.append(genre.genre)
 
-		print("Title: " + row.movie, "\nSummary: " + row.summary, "\nRating: " + row.rating, "\nGenres: ", genres)
-		print("\n")
+		movieDictionary["Recommendation"].append({'movie': row.movie, 'summary': row.summary, 'rating': row.rating, 'genres': genres})
+
+	return movieDictionary
+
+		# print("Title: " + row.movie, "\nSummary: " + row.summary, "\nRating: " + row.rating, "\nGenres: ", genres)
+		# print("\n")
 
 
 def searchByGenres(genres):
