@@ -1,0 +1,6 @@
+actor.csv
+bin
+include
+lib
+*.pyc
+src/*.pyc
