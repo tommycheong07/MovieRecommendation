@@ -1,16 +1,18 @@
-.container {
-	width: 60%;
-	margin: 40px;
+.actor-container, .genre-container {
+	width: 50%;
+	margin: auto;
+	text-align: center;
+	padding-top: 20px;
 }
 
-.tag-container {
+.actor-tag-container, .genre-tag-container {
 	border: 2px solid black;
 	padding: 10px;
 	border-radius: 5px;
 	display: flex;
 }
 
-.tag-container .tag {
+.actor-tag-container .actorTag, .genre-tag-container .genreTag {
 	padding: 5px;
 	border: 1px solid black;
 	margin: 5px;
@@ -21,14 +23,14 @@
 	cursor: default;
 }
 
-.material-icons {
-	font-size: 16px;
-	margin-left: 5px;
-}
-
-.tag-container input {
+.actor-tag-container input, .genre-tag-container input {
 	flex: 1;
 	font-size: 16px;
 	padding: 5px;
 	border: 5;
+}
+
+.material-icons {
+	font-size: 16px;
+	margin-left: 5px;
 }
