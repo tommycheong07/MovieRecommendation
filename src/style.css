@@ -1,0 +1,33 @@
+.container {
+	width: 60%;
+	margin: 40px;
+}
+
+.tag-container {
+	border: 2px solid black;
+	padding: 10px;
+	border-radius: 5px;
+	display: flex;
+}
+
+.tag-container .tag {
+	padding: 5px;
+	border: 1px solid black;
+	margin: 5px;
+	display: flex;
+	align-items: center;
+	border-radius: 3px;
+	background: lightgrey;
+}
+
+.material-icons {
+	font-size: 16px;
+	margin-left: 5px;
+}
+
+.tag-container input {
+	flex: 1;
+	font-size: 16px;
+	padding: 5px;
+	border: 5;
+}
