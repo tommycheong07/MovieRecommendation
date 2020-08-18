@@ -158,10 +158,10 @@ $(document).ready(function () {
 
                 recommendations = result["Recommendation"]
 
-                var tableRec = $("<table><tr><th>Movie</th><th>Summary</th><th>Rating</th><th>Genres</th></tr>");
+                var tableRec = $("<table><tr><th>Movie</th><th>Summary</th><th>Rating</th><th>Genres</th><th>Reason</th></tr>");
 
                 for (movie of recommendations) {
-                	tableRec.append("<tr><td>"+movie["movie"]+"</td>"+"<td>"+movie["summary"]+"</td>"+"<td>"+movie["rating"]+"</td>"+"<td>"+movie["genres"]+"</td>")
+                	tableRec.append("<tr><td>"+movie["movie"]+"</td>"+"<td>"+movie["summary"]+"</td>"+"<td>"+movie["rating"]+"</td>"+"<td>"+movie["genres"]+"</td>"+"<td>"+movie["reason"]+"</td>")
                 }
   
                 $("#movie-recommendations").html(tableRec);

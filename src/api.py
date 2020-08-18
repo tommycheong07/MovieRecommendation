@@ -31,12 +31,12 @@ def api_filter():
 
 	print("searching ... please wait")
 
-	if actorList and genreList:
+	if len(actorList) == 0 and len(genreList) == 0:
 		print("You did not provide an actor or genre to search")
-	elif not genreList:
+	elif len(genreList) == 0:
 		ret = searchByActors(actorList)
 		return jsonify(ret)
-	elif not actorList:
+	elif len(actorList) == 0:
 		ret = searchByGenres(genreList)
 		return jsonify(ret)
 	else:

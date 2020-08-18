@@ -7,7 +7,7 @@ from database import *
 
 
 
-def appendGenreAndPrint(moviesQ, recMoviesQ):
+def appendGenreAndPrint(moviesQ, recMoviesQ, recReason):
 	print("##### ")
 	print("*** Based on your criterias, we suggest these movies: ***")
 
@@ -34,11 +34,18 @@ def appendGenreAndPrint(moviesQ, recMoviesQ):
 	for row in recMoviesQ:
 		genres = []
 		genres_q = (MovieGenre.select().where(MovieGenre.movieID == row.movieID))
+		reason = ""
 
 		for genre in genres_q:
 			genres.append(genre.genre)
 
-		movieDictionary["Recommendation"].append({'movie': row.movie, 'summary': row.summary, 'rating': row.rating, 'genres': genres})
+		actors_q = (ActorMovie.select().where(ActorMovie.movieID == row.movieID))
+		for actor in actors_q:
+			for key in recReason:
+				if actor.nm == key:
+					reason = actor.actorName + " has been in " + str(recReason.get(key)) + " movies with your selected actor/actress"
+
+		movieDictionary["Recommendation"].append({'movie': row.movie, 'summary': row.summary, 'rating': row.rating, 'genres': genres, 'reason': reason})
 
 	return movieDictionary
 
@@ -47,7 +54,7 @@ def appendGenreAndPrint(moviesQ, recMoviesQ):
 
 
 def searchByGenres(genres):
-	movies_q = (MovieGenre.select().where(MovieGenre.genre.in_(genres)))
+	movies_q = (MovieGenre.select().join(Movie, on=(Movie.movieID == MovieGenre.movieID)).where(MovieGenre.genre.in_(genres)).order_by(Movie.rating.desc()).limit(1000))
 
 	movieIDList = []
 
@@ -56,9 +63,9 @@ def searchByGenres(genres):
 
 	movieInfo_q = (Movie.select().where(Movie.movieID.in_(movieIDList)).order_by(Movie.rating.desc()).limit(10))
 
-	rec_movies_q = recByGenres(movieIDList, genres)
+	rec_movies_q, rec_reason = recByGenres(movieIDList, genres)
 
-	return appendGenreAndPrint(movieInfo_q, rec_movies_q)
+	return appendGenreAndPrint(movieInfo_q, rec_movies_q, rec_reason)
 
 def searchByActors(actorNames):
 	actor_q = (ActorMovie.select().where(ActorMovie.actorName.in_(actorNames)))
@@ -71,9 +78,9 @@ def searchByActors(actorNames):
 
 	movies_q = (Movie.select().where(Movie.movieID.in_(actorMovieList)).order_by(Movie.rating.desc()).limit(10))
 
-	recommend_movies_q = recByActors(actorNames, actorMovieList)
+	recommend_movies_q, rec_reason = recByActors(actorNames, actorMovieList)
 
-	return appendGenreAndPrint(movies_q, recommend_movies_q)
+	return appendGenreAndPrint(movies_q, recommend_movies_q, rec_reason)
 
 def search(actorNames, genres):
 	movies_q = (MovieGenre.select().where(MovieGenre.genre.in_(genres)))
@@ -100,9 +107,9 @@ def search(actorNames, genres):
 
 	movieInfo_q = (Movie.select().where(Movie.movieID.in_(movList)).order_by(Movie.rating.desc()).limit(10))
 
-	rec_movies_q = recSearch(actorNames, movList, genres)
+	rec_movies_q, rec_reason = recSearch(actorNames, movList, genres)
 
-	return appendGenreAndPrint(movieInfo_q, rec_movies_q)
+	return appendGenreAndPrint(movieInfo_q, rec_movies_q, rec_reason)
 
 def recByActors(actorNamesList, movieList):
 	otherActors = (ActorMovie.select(ActorMovie.nm, fn.COUNT(ActorMovie.nm).alias('count'))
@@ -112,8 +119,12 @@ def recByActors(actorNamesList, movieList):
 								.limit(3))
 
 	otherActorsList = []
+	reasoning = {}
+
 	for row in otherActors:
 		otherActorsList.append(row.nm)
+		reasoning[row.nm] = ""
+		reasoning[row.nm] = row.count
 
 	recMovies = (Movie.select().join(ActorMovie, on=(ActorMovie.movieID == Movie.movieID))
 								.where((ActorMovie.nm.in_(otherActorsList)) & (Movie.movieID.not_in(movieList)))
@@ -121,7 +132,7 @@ def recByActors(actorNamesList, movieList):
 								.limit(5))
 
 
-	return recMovies
+	return recMovies, reasoning
 
 def recByGenres(movieList, genres):
 	actors = (ActorMovie.select(ActorMovie.nm, fn.COUNT(ActorMovie.nm).alias('count'))
@@ -131,8 +142,12 @@ def recByGenres(movieList, genres):
 								.limit(3))
 
 	otherActorsList = []
-	for row in actors:
+	reasoning = {}
+
+	for row in otherActors:
 		otherActorsList.append(row.nm)
+		reasoning[row.nm] = ""
+		reasoning[row.nm] = row.count
 
 	recMovies = (Movie.select().join(ActorMovie, on=(ActorMovie.movieID == Movie.movieID))
 								.join(MovieGenre, on=(Movie.movieID == MovieGenre.movieID))
@@ -140,7 +155,7 @@ def recByGenres(movieList, genres):
 								.order_by(Movie.rating.desc())
 								.limit(5))
 
-	return recMovies
+	return recMovies, reasoning
 
 def recSearch(actorNamesList, movieList, genres):
 	otherActors = (ActorMovie.select(ActorMovie.nm, fn.COUNT(ActorMovie.nm).alias('count'))
@@ -150,8 +165,12 @@ def recSearch(actorNamesList, movieList, genres):
 								.limit(3))
 
 	otherActorsList = []
+	reasoning = {}
+
 	for row in otherActors:
 		otherActorsList.append(row.nm)
+		reasoning[row.nm] = 0
+		reasoning[row.nm] = row.count
 
 	recMovies = (Movie.select().join(ActorMovie, on=(ActorMovie.movieID == Movie.movieID))
 								.join(MovieGenre, on=(Movie.movieID == MovieGenre.movieID))
@@ -159,7 +178,7 @@ def recSearch(actorNamesList, movieList, genres):
 								.order_by(Movie.rating.desc())
 								.limit(5))
 
-	return recMovies
+	return recMovies, reasoning
 
 
 
