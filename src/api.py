@@ -1,8 +1,10 @@
 import flask
 from recommend import *
-from flask import request, jsonify
+from flask import request, jsonify, Flask
+from flask_cors import CORS, cross_origin
 
-app = flask.Flask(__name__)
+app = Flask(__name__)
+CORS(app)
 app.config["DEBUG"] = True
 
 @app.errorhandler(404)
@@ -11,6 +13,7 @@ def page_not_found(e):
 
 
 @app.route('/api/v1/movierec', methods=['GET'])
+@cross_origin()
 def api_filter():
 	query_parameters = request.args
 

@@ -48,10 +48,28 @@
 </div>
 
 <div class="button center" style="padding-top: 20px;">
-	<button type="button">Search</button>
+	<button id="search" type="button">Search</button>
 </div>
 
+<div class = "suggestion" style = "padding-top: 30px">
+	<h3>*** Based on your criterias, we suggest these movies: ***</h1>
+</div>
+
+<div id="movie-suggestions">
+	<table><tr><th>Movie</th><th>Summary</th><th>Rating</th><th>Genres</th></tr></table>
+</div>
+
+<div class = "suggestion" style = "padding-top: 60px">
+	<h3>*** We also recommend these movies that you may be interested in based on other co-stars your search: ***</h1>
+</div>
+<div id="movie-recommendations" style = "padding-bottom: 60px">
+	<table><tr><th>Movie</th><th>Summary</th><th>Rating</th><th>Genres</th></tr></table>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script src="tags.js"></script>
+
 
 
 

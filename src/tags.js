@@ -105,10 +105,77 @@ document.addEventListener('click', function(e){
 	}
 })
 
-searchBtn.addEventListener('click', event => {
-	alert("Button Clicked!")
-})
+$(document).ready(function () {
+    $("#search").click(function (e) {
+    	urlToSend = "http://127.0.0.1:5000/api/v1/movierec?"
+    	if (actorTags.length == 0 && genreTags.length == 0){
+                alert("You did not provide any actors or genres")
+        }
 
+        if (actorTags.length != 0) {
+            urlToSend = urlToSend + "actors="
+			for (x of actorTags) {
+				var name = x.split(" ");
+				for(y of name) {
+					urlToSend = urlToSend + y + "+"
+				}
+				urlToSend = urlToSend.substring(0, urlToSend.length-1)
+				urlToSend = urlToSend + ","
+	        }
+	        urlToSend = urlToSend.substring(0, urlToSend.length-1)
+	    }
+
+	    if (genreTags.length != 0) {
+	        if (actorTags.length != 0) {
+	            urlToSend = urlToSend + "&genres="
+	        } else {
+	            urlToSend = urlToSend + "genres="
+	        }
+	        for (x of genreTags) {
+	            var name = x.split(" ")
+	            for (y of name) {
+	            	urlToSend = urlToSend + y + "+"
+	            }
+	            urlToSend = urlToSend.substring(0, urlToSend.length-1)
+				urlToSend = urlToSend + ","
+	        }
+	        urlToSend = urlToSend.substring(0, urlToSend.length-1)
+	    }
+        $.ajax({
+            type: "GET",
+            url: urlToSend,
+            dataType: "json",
+            success: function (result, status, xhr) {
+            suggestions = result["Selection"]
+
+                var tableSuggest = $("<table><tr><th>Movie</th><th>Summary</th><th>Rating</th><th>Genres</th></tr>");
+
+                for (movie of suggestions) {
+                	tableSuggest.append("<tr><td>"+movie["movie"]+"</td>"+"<td>"+movie["summary"]+"</td>"+"<td>"+movie["rating"]+"</td>"+"<td>"+movie["genres"]+"</td>")
+                }
+  
+                $("#movie-suggestions").html(tableSuggest);
+
+                recommendations = result["Recommendation"]
+
+                var tableRec = $("<table><tr><th>Movie</th><th>Summary</th><th>Rating</th><th>Genres</th></tr>");
+
+                for (movie of recommendations) {
+                	tableRec.append("<tr><td>"+movie["movie"]+"</td>"+"<td>"+movie["summary"]+"</td>"+"<td>"+movie["rating"]+"</td>"+"<td>"+movie["genres"]+"</td>")
+                }
+  
+                $("#movie-recommendations").html(tableRec);
+
+            },
+            error: function (xhr, status, error) {
+                alert("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText)
+            }
+        });
+        
+    });
+    actorTags = []
+    genreTags = []
+});
 
 
 
