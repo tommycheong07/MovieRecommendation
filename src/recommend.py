@@ -144,7 +144,7 @@ def recByGenres(movieList, genres):
 	otherActorsList = []
 	reasoning = {}
 
-	for row in otherActors:
+	for row in actors:
 		otherActorsList.append(row.nm)
 		reasoning[row.nm] = ""
 		reasoning[row.nm] = row.count
